@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+
+	{% include('header.html') %}
+
+</head>
+
+<body>
+
+<div id="pagewrap">
+
+	<header id="header">
+
+		{% include('logo.html') %}
+
+        {% include('global-nav.html') %}
+        <!-- /#main-nav -->
+	</header>
+	<!-- /#header -->
+
+	<div id="content">
+
+		{% block body %}{% endblock %}
+
+	</div>
+	<!-- /#content -->
+
+
+	<aside id="sidebar">
+
+		{% block sidebar %}{% endblock %}
+
+	</aside>
+	<!-- /#sidebar -->
+
+	{% include('footer.html') %}
+	<!-- /#footer -->
+
+</div>
+<!-- /#pagewrap -->
+
+</body>
+</html>
