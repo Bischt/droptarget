@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<article class="post clearfix">
+
+    <header>
+        <h1 class="post-title"><a href="#">Machines</a></h1>
+        <p class="post-meta"><time class="post-date" datetime="2011-05-08" pubdate>May 8, 2011</time> <em>in</em> <a href="#">Category</a></p>
+    </header>
+    <figure class="post-image">
+        <img src="{{ url_for('static', filename='images/dt-3.jpg') }}" />
+    </figure>
+    <p><h3>All known machines in the database</h3></p>
+    <p>These are all the machines that are available to assign to locations.  Add, Edit, and Delete machines.</p>
+
+</article>
+<!-- /.post -->
+
+{% endblock %}
+
+{% block sidebar %}
+    {% include('player-sidebar.html') %}
+
+    {% include('admin-sidebar.html') %}
+{% endblock %}

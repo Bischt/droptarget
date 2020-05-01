@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<article class="post clearfix">
+
+    <header>
+        <h1 class="post-title"><a href="#">Locations</a></h1>
+        <p class="post-meta"><time class="post-date" datetime="2011-05-08" pubdate>May 8, 2011</time> <em>in</em> <a href="#">Category</a></p>
+    </header>
+    <p><h3>Manage Locations</h3></p>
+    <p>These locations are where tournaments can happen.  Add, Edit, or Delete locations.</p>
+    <p>
+        This is also where you can manage which machines are available to play at each location.
+        Add and remove machines from a location or update the details of a specific location machine.
+    </p>
+
+</article>
+<!-- /.post -->
+
+{% endblock %}
+
+{% block sidebar %}
+    {% include('player-sidebar.html') %}
+
+    {% include('admin-sidebar.html') %}
+{% endblock %}
