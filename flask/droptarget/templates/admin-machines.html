@@ -1,5 +1,31 @@
 {% extends "layout.html" %}
 
+{% block additional_includes %}
+<link href="{{ url_for('static', filename='styles/lib/jquery.dataTables.min.css') }}" rel="stylesheet" type="text/css">
+<link href="{{ url_for('static', filename='styles/lib/responsive.dataTables.min.css') }}" rel="stylesheet" type="text/css">
+
+<script src="{{ url_for('static', filename='scripts/lib/jquery-3.3.1.js') }}"></script>
+
+<script src="{{ url_for('static', filename='scripts/lib/jquery.dataTables.min.js') }}"></script>
+<script src="{{ url_for('static', filename='scripts/lib/dataTables.responsive.min.js') }}"></script>
+
+<script type="text/javascript" charset="utf-8">
+//<!--
+$(document).ready(function() {
+    $('#example').DataTable( {
+        responsive: {
+            details: {
+                display: $.fn.dataTable.Responsive.display.childRowImmediate,
+                type: 'none',
+                target: ''
+            }
+        }
+    } );
+} );
+//-->
+</script>
+{% endblock %}
+
 {% block body %}
 <article class="post clearfix">
 
@@ -12,6 +38,22 @@
     </figure>
     <p><h3>All known machines in the database</h3></p>
     <p>These are all the machines that are available to assign to locations.  Add, Edit, and Delete machines.</p>
+
+
+    <table id="example" class="display nowrap" style="width:100%">
+        <thead>
+        <tr> <th>Name</th> <th>Abbr</th> <th>Manufacturer</th> <th>Date</th> <th>Players</th> <th>Type</th> <th>Theme</th> <th>IPDB</th> </tr>
+        </thead>
+        <tbody>
+        {% if machine_data != "api_error" %}
+        {% for machine in machine_data %}
+        <tr> <td>{{ machine['name'] }}</td> <td>{{ machine['abbr'] }}</td> <td>{{ machine['manufacturer'] }}</td> <td>{{ machine['manDate'] }}</td> <td>{{ machine['players'] }}</td> <td>{{ machine['gameType'] }}</td> <td>{{ machine['theme'] }}</td> <td>{{ machine['ipdbURL'] }}</td> </tr>
+        {% endfor %}
+        {% else %}
+        <tr><td>No entries.</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        {% endif %}
+        </tbody>
+    </table>
 
 </article>
 <!-- /.post -->

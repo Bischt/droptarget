@@ -1,5 +1,31 @@
 {% extends "layout.html" %}
 
+{% block additional_includes %}
+<link href="{{ url_for('static', filename='styles/lib/jquery.dataTables.min.css') }}" rel="stylesheet" type="text/css">
+<link href="{{ url_for('static', filename='styles/lib/responsive.dataTables.min.css') }}" rel="stylesheet" type="text/css">
+
+<script src="{{ url_for('static', filename='scripts/lib/jquery-3.3.1.js') }}"></script>
+
+<script src="{{ url_for('static', filename='scripts/lib/jquery.dataTables.min.js') }}"></script>
+<script src="{{ url_for('static', filename='scripts/lib/dataTables.responsive.min.js') }}"></script>
+
+<script type="text/javascript" charset="utf-8">
+//<!--
+$(document).ready(function() {
+    $('#example').DataTable( {
+        responsive: {
+            details: {
+                display: $.fn.dataTable.Responsive.display.childRowImmediate,
+                type: 'none',
+                target: ''
+            }
+        }
+    } );
+} );
+//-->
+</script>
+{% endblock %}
+
 {% block body %}
 <article class="post clearfix">
 
@@ -13,6 +39,21 @@
         This is also where you can manage which machines are available to play at each location.
         Add and remove machines from a location or update the details of a specific location machine.
     </p>
+
+    <table id="example" class="display nowrap" style="width:100%">
+        <thead>
+        <tr> <th>Name</th> <th>Address</th> <th>Private?</th> <th>Type</th> <th>Active</th> <th>Notes</th> </tr>
+        </thead>
+        <tbody>
+        {% if location_data != "api_error" %}
+        {% for location in location_data %}
+        <tr> <td>{{ location['name'] }}</td> <td>{{ location['address'] }}</td> <td>{{ location['addressPrivate'] }}</td> <td>{{ location['locType'] }}</td> <td>{{ location['active'] }}</td> <td>{{ location['notes'] }}</td> </tr>
+        {% endfor %}
+        {% else %}
+        <tr><td>No entries.</td><td></td><td></td><td></td><td></td><td></td></tr>
+        {% endif %}
+        </tbody>
+    </table>
 
 </article>
 <!-- /.post -->

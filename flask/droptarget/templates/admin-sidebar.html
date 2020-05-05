@@ -2,9 +2,9 @@
 <section class="widget">
     <h4 class="widgettitle">Admin - Content</h4>
     <ul>
-        <li><a href="/admin/machines">Machines</a></li>
-        <li><a href="/admin/locations">Locations</a></li>
-        <li><a href="/admin/players">Players </a></li>
+        <li><a href="/admin/machines">Machines {% if obj_counts != "api_error" %} ({% print obj_counts[0]['machine_count'] %}) {% endif %}</a></li>
+        <li><a href="/admin/locations">Locations {% if obj_counts != "api_error" %} ({% print obj_counts[0]['location_count'] %}) {% endif %}</a></li>
+        <li><a href="/admin/players">Players {% if obj_counts != "api_error" %} ({% print obj_counts[0]['player_count'] %}) {% endif %}</a></li>
     </ul>
 </section>
 

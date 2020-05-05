@@ -1,5 +1,31 @@
 {% extends "layout.html" %}
 
+{% block additional_includes %}
+<link href="{{ url_for('static', filename='styles/lib/jquery.dataTables.min.css') }}" rel="stylesheet" type="text/css">
+<link href="{{ url_for('static', filename='styles/lib/responsive.dataTables.min.css') }}" rel="stylesheet" type="text/css">
+
+<script src="{{ url_for('static', filename='scripts/lib/jquery-3.3.1.js') }}"></script>
+
+<script src="{{ url_for('static', filename='scripts/lib/jquery.dataTables.min.js') }}"></script>
+<script src="{{ url_for('static', filename='scripts/lib/dataTables.responsive.min.js') }}"></script>
+
+<script type="text/javascript" charset="utf-8">
+//<!--
+$(document).ready(function() {
+    $('#example').DataTable( {
+        responsive: {
+            details: {
+                display: $.fn.dataTable.Responsive.display.childRowImmediate,
+                type: 'none',
+                target: ''
+            }
+        }
+    } );
+} );
+//-->
+</script>
+{% endblock %}
+
 {% block body %}
 <article class="post clearfix">
 
@@ -9,6 +35,21 @@
     </header>
     <p><h3>Manage Players</h3></p>
     <p>Add, update, and delete player profiles.  These players can join tournaments.</p>
+
+    <table id="example" class="display nowrap" style="width:100%">
+        <thead>
+        <tr> <th>Name</th> <th>Nick</th> <th>Email</th> <th>Phone</th> <th>Location</th> <th>Status</th> <th>Active</th> <th>IFPA#</th> <th>Pinside</th> <th>Notes</th> </tr>
+        </thead>
+        <tbody>
+        {% if player_data != "api_error" %}
+        {% for player in player_data %}
+        <tr> <td>{{ player['name'] }}</td> <td>{{ player['nick'] }}</td> <td>{{ player['email'] }}</td> <td>{{ player['phone'] }}</td> <td>{{ player['location'] }}</td> <td>{{ player['status'] }}</td> <td>{{ player['active'] }}</td> <td>{{ player['ifpanumber'] }}</td> <td>{{ player['pinside'] }}</td> <td>{{ player['notes'] }}</td> </tr>
+        {% endfor %}
+        {% else %}
+        <tr> <td>No entries.</td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> </tr>
+        {% endif %}
+        </tbody>
+    </table>
 
 </article>
 <!-- /.post -->

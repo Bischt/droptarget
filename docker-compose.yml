@@ -9,7 +9,7 @@ services:
     environment:
       - APP_NAME=droptarget
     expose:
-      - 8080
+      - 8082
 
   nginx:
     build: ./nginx
