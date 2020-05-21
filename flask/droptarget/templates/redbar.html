@@ -1,0 +1,9 @@
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+<div id="redbar" style="width:600px; margin:10 auto; margin-bottom:0px;">
+    {% for message in messages %}
+	<p>&nbsp;&nbsp;{{ message }}</p>
+	{% endfor %}
+</div>
+{% endif %}
+{% endwith %}

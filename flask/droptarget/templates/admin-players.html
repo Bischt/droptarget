@@ -4,10 +4,110 @@
 <link href="{{ url_for('static', filename='styles/lib/jquery.dataTables.min.css') }}" rel="stylesheet" type="text/css" />
 <link href="{{ url_for('static', filename='styles/lib/responsive.dataTables.min.css') }}" rel="stylesheet" type="text/css" />
 
+<link href="{{ url_for('static', filename='styles/lib/magnific-popup.css') }}" rel="stylesheet" type="text/css" />
+
+<style>
+.white-popup-block {
+  position: relative;
+  background: #FFF;
+  padding: 20px;
+  width: auto;
+  max-width: 500px;
+  margin: 20px auto;
+}
+</style>
+
 <script src="{{ url_for('static', filename='scripts/lib/jquery-3.5.1.min.js') }}"></script>
+
+<script src="{{ url_for('static', filename='scripts/lib/jquery.magnific-popup.min.js') }}"></script>
 
 <script src="{{ url_for('static', filename='scripts/lib/jquery.dataTables.min.js') }}"></script>
 <script src="{{ url_for('static', filename='scripts/lib/dataTables.responsive.min.js') }}"></script>
+
+<script type="text/javascript" charset="utf-8">
+//<!--
+    $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+
+    // Show player details
+    function showPlayer(player_id) {
+        // Start by clearing form of any previous data
+        initialize_player_form()
+
+        // Editing player
+        if (player_id != "") {
+	        $.getJSON($SCRIPT_ROOT + '/admin/_admin_player_info', {
+	        player_id: player_id
+	        }, function(data) {
+                // Jquery thing that isn't working
+		        //$("#name").value("TEST VALUE");
+
+                // Set headers
+                if (data.nick != "") {
+                    document.getElementById("rendered_player_header").innerHTML = data.name + " (" + data.nick + ")";
+                }
+                else {
+                    document.getElementById("rendered_player_header").innerHTML = data.name;
+                }
+                document.getElementById("rendered_player_subheader").innerHTML = "Edit player info";
+
+                // Populate fields with existing data for editing
+		        document.getElementById("player_id").value = data.player_id;
+		        document.getElementById("name").value = data.name;
+		        document.getElementById("nick").value = data.nick;
+		        document.getElementById("phone").value = data.phone;
+		        document.getElementById("email").value = data.email;
+		        document.getElementById("location").value = data.location;
+		        document.getElementById("ifpanumber").value = data.ifpa;
+		        document.getElementById("pinside").value = data.pinside;
+		        document.getElementById("notes").value = data.notes;
+
+		        // Select correct status value
+		        select('status', data.status)
+
+		        // Select correct active value
+		        select('active', data.active)
+	        });
+	    }
+		// Adding new player
+		else {
+		    document.getElementById("rendered_player_header").innerHTML = "Add New Player"
+		    document.getElementById("rendered_player_subheader").innerHTML = "Create new entry"
+		}
+    }
+
+    function initialize_player_form() {
+        document.getElementById("rendered_player_header").innerHTML = ""
+		document.getElementById("rendered_player_subheader").innerHTML = ""
+        document.getElementById("player_id").value = "";
+		document.getElementById("name").value = "";
+		document.getElementById("nick").value = "";
+		document.getElementById("phone").value = "";
+		document.getElementById("email").value = "";
+		document.getElementById("location").value = "";
+		document.getElementById("ifpanumber").value = "";
+		document.getElementById("pinside").value = "";
+		document.getElementById("notes").value = "";
+		select('status', 0)
+		select('active', 'true')
+    }
+
+    function select(selectId, optionValToSelect) {
+        //Get the select element by it's unique ID.
+        var selectElement = document.getElementById(selectId);
+        //Get the options.
+        var selectOptions = selectElement.options;
+        //Loop through these options using a for loop.
+        for (var opt, j = 0; opt = selectOptions[j]; j++) {
+            //If the option of value is equal to the option we want to select.
+            if (String(opt.value) == String(optionValToSelect)) {
+                //Select the option and break out of the for loop.
+                selectElement.selectedIndex = j;
+                break;
+            }
+        }
+    }
+//-->
+</script>
 
 <script type="text/javascript" charset="utf-8">
 //<!--
@@ -24,6 +124,7 @@ $(document).ready(function() {
 } );
 //-->
 </script>
+
 {% endblock %}
 
 {% block body %}
@@ -38,19 +139,83 @@ $(document).ready(function() {
 
     <table id="example" class="display nowrap" style="width:100%">
         <thead>
-        <tr> <th>Name</th> <th>Nick</th> <th>Email</th> <th>Phone</th> <th>Location</th> <th>Status</th> <th>Active</th> <th>IFPA#</th> <th>Pinside</th> <th>Notes</th> </tr>
+        <tr> <th></th> <th>Name</th> <th>Initials</th> <th>IFPA#</th> <th>Paid?</th> <th>Active</th> </tr>
         </thead>
         <tbody>
         {% if player_data != "api_error" %}
         {% for player in player_data %}
-        <tr> <td>{{ player['name'] }}</td> <td>{{ player['nick'] }}</td> <td>{{ player['email'] }}</td> <td>{{ player['phone'] }}</td> <td>{{ player['location'] }}</td> <td>{{ player['status'] }}</td> <td>{{ player['active'] }}</td> <td>{{ player['ifpanumber'] }}</td> <td>{{ player['pinside'] }}</td> <td>{{ player['notes'] }}</td> </tr>
+        <tr>
+            <td><a href="#admin-player-modal" class="open-popup-link" onclick="javascript:showPlayer({{ player['player_id'] }});">Edit</a></td>
+            <td>{{ player['name'] }}</td>
+            <td>{{ player['nick'] }}</td>
+            <td>{{ player['ifpanumber'] }}</td>
+            <td>
+                <select name="ispaid-{{ player['player_id'] }}" onchange="javascript:alert('Updated Paid');">
+                    <option value="1"{% if player['status'] == 1 %} selected{% endif %}>Paid</option>
+                    <option value="0"{% if player['status'] == 0 %} selected{% endif %}>Not Paid</option>
+                </select>
+            </td>
+            <td>
+                <select name="isactive-{{ player['player_id'] }}" onchange="javascript:alert('Updated Active');">
+                    <option value="true"{% if player['active'] == True %} selected{% endif %}>Yes</option>
+                    <option value="false"{% if player['active'] == False %} selected{% endif %}>No</option>
+                </select>
+            </td>
+        </tr>
         {% endfor %}
         {% else %}
-        <tr> <td>No entries.</td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> </tr>
+        <tr> <td>No entries.</td> <td></td> <td></td> <td></td> <td></td> <td></td> </tr>
         {% endif %}
         </tbody>
     </table>
+    <a href="#admin-player-modal" class="open-popup-link" onclick="javascript:showPlayer('');">Add New Player</a>
+    <a class="simple-ajax-popup-align-top" href="{{ url_for('static', filename='pages/test-ajax.html') }}">Ajax Modal</a>
+    <!--Modal for adding/editing player-->
+    <div id="admin-player-modal" class="white-popup-block mfp-hide" style="max-width:600px; margin: 20px auto;">
+        <h1 id="rendered_player_header"></h1>
+        <div>
+        <p id="rendered_player_subheader"></p>
 
+        <form action="" name="addPlayer" method="POST">
+        {{ playerform.hidden_tag() }}
+        <p><b>Name: </b>{{ playerform.name }}</p>
+	    <p><b>Initials: </b>{{ playerform.nick }}</p>
+        <p><b>Email: </b>{{ playerform.email }}</p>
+        <p><b>Phone: </b>{{ playerform.phone }}</p>
+        <p><b>Location: </b>{{ playerform.location }}</p>
+        <p><b>IFPA Number: </b>{{ playerform.ifpanumber }}</p>
+        <p><b>Pinside: </b>{{ playerform.pinside }}</p>
+	    <p><b>Notes: </b>{{ playerform.notes }}</p>
+	    <p><b>Dues Paid? </b>{{ playerform.status }}</p>
+	    <p><b>Active? </b>{{ playerform.active }}</p>
+
+        <input type="submit" value="Add" />
+        </form>
+
+        </div>
+    </div>
+
+    <script type="text/javascript">
+    //<!--
+      $(document).ready(function() {
+
+        $('.simple-ajax-popup-align-top').magnificPopup({
+          type: 'ajax',
+          alignTop: true,
+          overflowY: 'scroll' // as we know that popup content is tall we set scroll overflow by default to avoid jump
+        });
+
+        $('.simple-ajax-popup').magnificPopup({
+          type: 'ajax'
+        });
+
+        $('.open-popup-link').magnificPopup({
+          type:'inline',
+          midClick: true // Allow opening popup on middle mouse click. Always set it to true if you don't provide alternative source in href.
+        });
+      });
+    //-->
+    </script>
 </article>
 <!-- /.post -->
 
