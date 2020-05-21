@@ -12,7 +12,8 @@ class PlayfieldAPI:
     def api_request(self, method, resource, function, data):
         if method.lower() == "get" and data is not None:
             get_vars = ""
-            get_vars = get_vars + "/" + urllib.parse.quote(data)
+            for var in data:
+                get_vars = get_vars + "/" + urllib.parse.quote(var)
 
             url = f'http://{self.playfield_api_host}:{self.playfield_api_port}/api' \
                   f'/v1/resources/{resource}/{function}{urllib.parse.quote(get_vars)}'

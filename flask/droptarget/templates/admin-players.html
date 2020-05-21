@@ -29,7 +29,7 @@
     $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
 
     // Show player details
-    function showPlayer(player_id) {
+    function show_player(player_id) {
         // Start by clearing form of any previous data
         initialize_player_form()
 
@@ -73,6 +73,26 @@
 		    document.getElementById("rendered_player_header").innerHTML = "Add New Player"
 		    document.getElementById("rendered_player_subheader").innerHTML = "Create new entry"
 		}
+    }
+
+    // Update player status
+    function set_status(player_id, status) {
+	    $.getJSON($SCRIPT_ROOT + '/admin/_update_player_status', {
+	    player_id: player_id,
+	    status: status
+	    }, function(data) {
+
+	    });
+    }
+
+    // Update player active
+    function set_active(player_id, active) {
+	    $.getJSON($SCRIPT_ROOT + '/admin/_update_player_active', {
+	    player_id: player_id,
+	    active: active
+	    }, function(data) {
+
+	    });
     }
 
     function initialize_player_form() {
@@ -145,18 +165,18 @@ $(document).ready(function() {
         {% if player_data != "api_error" %}
         {% for player in player_data %}
         <tr>
-            <td><a href="#admin-player-modal" class="open-popup-link" onclick="javascript:showPlayer({{ player['player_id'] }});">Edit</a></td>
+            <td><a href="#admin-player-modal" class="open-popup-link" onclick="javascript:show_player({{ player['player_id'] }});">Edit</a></td>
             <td>{{ player['name'] }}</td>
             <td>{{ player['nick'] }}</td>
             <td>{{ player['ifpanumber'] }}</td>
             <td>
-                <select name="ispaid-{{ player['player_id'] }}" onchange="javascript:alert('Updated Paid');">
+                <select name="ispaid-{{ player['player_id'] }}" onchange="javascript:set_status(this.name.substring(this.name.indexOf('-')+1,this.name.length), this.value);">
                     <option value="1"{% if player['status'] == 1 %} selected{% endif %}>Paid</option>
                     <option value="0"{% if player['status'] == 0 %} selected{% endif %}>Not Paid</option>
                 </select>
             </td>
             <td>
-                <select name="isactive-{{ player['player_id'] }}" onchange="javascript:alert('Updated Active');">
+                <select name="isactive-{{ player['player_id'] }}" onchange="javascript:set_active(this.name.substring(this.name.indexOf('-')+1,this.name.length), this.value);">
                     <option value="true"{% if player['active'] == True %} selected{% endif %}>Yes</option>
                     <option value="false"{% if player['active'] == False %} selected{% endif %}>No</option>
                 </select>
@@ -168,7 +188,7 @@ $(document).ready(function() {
         {% endif %}
         </tbody>
     </table>
-    <a href="#admin-player-modal" class="open-popup-link" onclick="javascript:showPlayer('');">Add New Player</a>
+    <a href="#admin-player-modal" class="open-popup-link" onclick="javascript:show_player('');">Add New Player</a>
     <a class="simple-ajax-popup-align-top" href="{{ url_for('static', filename='pages/test-ajax.html') }}">Ajax Modal</a>
     <!--Modal for adding/editing player-->
     <div id="admin-player-modal" class="white-popup-block mfp-hide" style="max-width:600px; margin: 20px auto;">

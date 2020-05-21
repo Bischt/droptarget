@@ -74,7 +74,8 @@ def admin_player_info():
     player_id = request.args.get('player_id', 0, type=str)
 
     # Query API for specific player by id
-    player_json = playfield.api_request("get", "player", "player_by_id", player_id)
+    data = (player_id, )
+    player_json = playfield.api_request("get", "player", "player_by_id", data)
 
     # If error querying API flash message to user
     if player_json is not "Error" and player_json is not None:
@@ -110,6 +111,43 @@ def admin_player_info():
                    notes=notes,
                    status=status,
                    active=active)
+
+
+@admin.route('/admin/_update_player_status')
+# Update the player's status.  Status is used to determine if the user is paid up.
+def update_player_status():
+    player_id = request.args.get('player_id', 0, type=str)
+    status = request.args.get('status', 0, type=int)
+    if status == 1:
+        statusvalue = 1
+    elif status == 0:
+        statusvalue = 0
+    else:
+        statusvalue = 0
+
+    data = (player_id, str(statusvalue),)
+    retval = playfield.api_request("get", "player", "set_status", data)
+
+    return jsonify(ret=0)
+
+
+@admin.route('/admin/_update_player_active')
+# Update the player's status.  Status is used to determine if the user is paid up.
+def update_player_active():
+    player_id = request.args.get('player_id', 0, type=str)
+    active = request.args.get('active', 0, type=str)
+
+    if active == "true":
+        activevalue = True
+    elif active == "false":
+        activevalue = False
+    else:
+        activevalue = False
+
+    data = (player_id, str(activevalue),)
+    retval = playfield.api_request("get", "player", "set_active", data)
+
+    return jsonify(ret=0)
 
 
 def _get_all_players():
