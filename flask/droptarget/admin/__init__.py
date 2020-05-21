@@ -70,7 +70,7 @@ def show_admin_players():
 
 @admin.route('/admin/_admin_player_info')
 # Get all the admin editable details about a player from the database and return as JSON
-def admin_player_info():
+def _admin_player_info():
     player_id = request.args.get('player_id', 0, type=str)
 
     # Query API for specific player by id
@@ -115,7 +115,7 @@ def admin_player_info():
 
 @admin.route('/admin/_update_player_status')
 # Update the player's status.  Status is used to determine if the user is paid up.
-def update_player_status():
+def _update_player_status():
     player_id = request.args.get('player_id', 0, type=str)
     status = request.args.get('status', 0, type=int)
     if status == 1:
@@ -133,7 +133,7 @@ def update_player_status():
 
 @admin.route('/admin/_update_player_active')
 # Update the player's status.  Status is used to determine if the user is paid up.
-def update_player_active():
+def _update_player_active():
     player_id = request.args.get('player_id', 0, type=str)
     active = request.args.get('active', 0, type=str)
 
