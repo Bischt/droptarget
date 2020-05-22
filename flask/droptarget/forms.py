@@ -4,6 +4,9 @@ from wtforms.validators import DataRequired, NumberRange, Required, Optional, An
 
 
 class AddPlayerForm(FlaskForm):
+
+    operation = HiddenField('operation', validators=[Optional()])
+
     player_id = HiddenField('player_id', validators=[Optional()])
 
     nick = StringField('Initials', validators=[Optional()])

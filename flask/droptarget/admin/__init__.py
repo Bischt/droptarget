@@ -38,28 +38,23 @@ def show_admin_locations():
                            location_data=_get_all_locations())
 
 
-@admin.route('/admin/players')
+@admin.route('/admin/players', methods=['GET', 'POST'])
 def show_admin_players():
     playerform = AddPlayerForm()
 
     # When a form is submitted, process it
     if request.method == 'POST':
-        # Process new player form
-        if playerform.validate_on_submit():
-            # Pull submitted data from the form
-            data = dict(player_id=request.form['player_id'],
-                        name=request.form['name'],
-                        nick=request.form['nick'],
-                        email=request.form['email'],
-                        phone=request.form['phone'],
-                        location=request.form['location'],
-                        ifpanumber=request.form['ifpanumber'],
-                        pinside=request.form['pinside'],
-                        notes=request.form['notes'],
-                        status=request.form['status'],
-                        active=request.form['active'])
+        # Process add/edit player form
 
-            results = playfield.api_request("post", "player", "add_player", data)
+        # TODO: Figure out server side form validation
+        # if playerform.validate_on_submit():
+
+        if request.form['operation'] == "edit":
+            # Editing existing player
+            _update_player()
+        else:
+            # Adding new player
+            _add_player()
 
     return render_template('admin-players.html',
                            title="Admin - Players",
@@ -113,7 +108,45 @@ def _admin_player_info():
                    active=active)
 
 
-@admin.route('/admin/_update_player_status')
+@admin.route('/admin/_add_player', methods=['POST'])
+def _add_player():
+    data = dict(name=request.form['name'],
+                nick=request.form['nick'],
+                email=request.form['email'],
+                phone=request.form['phone'],
+                location=request.form['location'],
+                ifpanumber=request.form['ifpanumber'],
+                pinside=request.form['pinside'],
+                notes=request.form['notes'],
+                status=request.form['status'],
+                active=request.form['active'])
+
+    retval = playfield.api_request("post", "player", "add_player", data)
+
+    return jsonify(ret=0)
+
+
+@admin.route('/admin/_update_player', methods=['POST'])
+def _update_player():
+
+    data = dict(player_id=request.form['player_id'],
+                name=request.form['name'],
+                nick=request.form['nick'],
+                email=request.form['email'],
+                phone=request.form['phone'],
+                location=request.form['location'],
+                ifpanumber=request.form['ifpanumber'],
+                pinside=request.form['pinside'],
+                notes=request.form['notes'],
+                status=request.form['status'],
+                active=request.form['active'])
+
+    retval = playfield.api_request("post", "player", "update_player", data)
+
+    return jsonify(ret=0)
+
+
+@admin.route('/admin/_update_player_status', methods=['GET'])
 # Update the player's status.  Status is used to determine if the user is paid up.
 def _update_player_status():
     player_id = request.args.get('player_id', 0, type=str)
@@ -131,7 +164,7 @@ def _update_player_status():
     return jsonify(ret=0)
 
 
-@admin.route('/admin/_update_player_active')
+@admin.route('/admin/_update_player_active', methods=['GET'])
 # Update the player's status.  Status is used to determine if the user is paid up.
 def _update_player_active():
     player_id = request.args.get('player_id', 0, type=str)

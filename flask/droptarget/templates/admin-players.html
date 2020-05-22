@@ -36,7 +36,7 @@
         // Editing player
         if (player_id != "") {
 	        $.getJSON($SCRIPT_ROOT + '/admin/_admin_player_info', {
-	        player_id: player_id
+	            player_id: player_id
 	        }, function(data) {
                 // Jquery thing that isn't working
 		        //$("#name").value("TEST VALUE");
@@ -66,20 +66,69 @@
 
 		        // Select correct active value
 		        select('active', data.active)
+
+		        document.getElementById("save_button").value = "Save Player";
+		        document.getElementById("save_button").name = "edit_player";
+
+		        document.getElementById("operation").value = "edit";
 	        });
 	    }
 		// Adding new player
 		else {
 		    document.getElementById("rendered_player_header").innerHTML = "Add New Player"
 		    document.getElementById("rendered_player_subheader").innerHTML = "Create new entry"
+
+		    document.getElementById("save_button").value = "Add Player";
+		    document.getElementById("save_button").name = "add_player";
+
+            document.getElementById("operation").value = "add";
 		}
+    }
+
+    // Handle Add/Editing Player
+    function save_player() {
+        operation = document.getElementById("save_button").name
+
+        if (operation == "edit_player") {
+            $.post($SCRIPT_ROOT + '/admin/_update_player', {
+	            player_id: document.getElementById("player_id").value,
+	            name: document.getElementById("name").value,
+	            nick: document.getElementById("nick").value,
+	            phone: document.getElementById("phone").value,
+	            email: document.getElementById("email").value,
+	            location: document.getElementById("location").value,
+	            ifpanumber: document.getElementById("ifpanumber").value,
+	            pinside: document.getElementById("pinside").value,
+	            notes: document.getElementById("notes").value,
+	            status: document.getElementById("status").value,
+	            active: document.getElementById("active").value
+	        }, function(data) {
+
+	        });
+        }
+        else {
+            $.post($SCRIPT_ROOT + '/admin/_add_player', {
+	            name: document.getElementById("name").value,
+	            nick: document.getElementById("nick").value,
+	            phone: document.getElementById("phone").value,
+	            email: document.getElementById("email").value,
+	            location: document.getElementById("location").value,
+	            ifpanumber: document.getElementById("ifpanumber").value,
+	            pinside: document.getElementById("pinside").value,
+	            notes: document.getElementById("notes").value,
+	            status: document.getElementById("status").value,
+	            active: document.getElementById("active").value
+	        }, function(data) {
+
+	        });
+        }
     }
 
     // Update player status
     function set_status(player_id, status) {
 	    $.getJSON($SCRIPT_ROOT + '/admin/_update_player_status', {
-	    player_id: player_id,
-	    status: status
+	        player_id: player_id,
+	        status: status
 	    }, function(data) {
 
 	    });
@@ -88,8 +137,8 @@
     // Update player active
     function set_active(player_id, active) {
 	    $.getJSON($SCRIPT_ROOT + '/admin/_update_player_active', {
-	    player_id: player_id,
-	    active: active
+	        player_id: player_id,
+	        active: active
 	    }, function(data) {
 
 	    });
@@ -189,14 +238,13 @@ $(document).ready(function() {
         </tbody>
     </table>
     <a href="#admin-player-modal" class="open-popup-link" onclick="javascript:show_player('');">Add New Player</a>
-    <a class="simple-ajax-popup-align-top" href="{{ url_for('static', filename='pages/test-ajax.html') }}">Ajax Modal</a>
     <!--Modal for adding/editing player-->
     <div id="admin-player-modal" class="white-popup-block mfp-hide" style="max-width:600px; margin: 20px auto;">
         <h1 id="rendered_player_header"></h1>
         <div>
         <p id="rendered_player_subheader"></p>
 
-        <form action="" name="addPlayer" method="POST">
+        <form action="/admin/players" id="player_form" name="player_form" method="POST">
         {{ playerform.hidden_tag() }}
         <p><b>Name: </b>{{ playerform.name }}</p>
 	    <p><b>Initials: </b>{{ playerform.nick }}</p>
@@ -209,7 +257,7 @@ $(document).ready(function() {
 	    <p><b>Dues Paid? </b>{{ playerform.status }}</p>
 	    <p><b>Active? </b>{{ playerform.active }}</p>
 
-        <input type="submit" value="Add" />
+        <input type="submit" id="save_button" name="add_player" value="Add Player" />
         </form>
 
         </div>
