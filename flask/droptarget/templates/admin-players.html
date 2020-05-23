@@ -214,7 +214,9 @@ $(document).ready(function() {
         {% if player_data != "api_error" %}
         {% for player in player_data %}
         <tr>
-            <td><a href="#admin-player-modal" class="open-popup-link" onclick="javascript:show_player({{ player['player_id'] }});">Edit</a></td>
+            <td><a href="#admin-player-modal" class="open-popup-link" onclick="javascript:show_player({{ player['player_id'] }});">Edit</a>&nbsp;|&nbsp;
+            <a href="#" class="" onclick="">Delete</a>
+            </td>
             <td>{{ player['name'] }}</td>
             <td>{{ player['nick'] }}</td>
             <td>{{ player['ifpanumber'] }}</td>

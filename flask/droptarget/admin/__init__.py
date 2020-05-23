@@ -51,10 +51,26 @@ def show_admin_players():
 
         if request.form['operation'] == "edit":
             # Editing existing player
-            _update_player()
+            results = _update_player()
+
+            if results is not "Error":
+                # Succeeded, so lets display a message
+                flash("info")
+                flash("Edited player - %s" % request.form['name'])
+            else:
+                flash("error")
+                flash("Problem accessing Playfield API")
         else:
             # Adding new player
-            _add_player()
+            results = _add_player()
+
+            if results is not "Error":
+                # Succeeded, so lets display a message
+                flash("info")
+                flash("Added new player - %s" % request.form['name'])
+            else:
+                flash("error")
+                flash("Problem accessing Playfield API")
 
     return render_template('admin-players.html',
                            title="Admin - Players",
@@ -123,7 +139,7 @@ def _add_player():
 
     retval = playfield.api_request("post", "player", "add_player", data)
 
-    return jsonify(ret=0)
+    return retval
 
 
 @admin.route('/admin/_update_player', methods=['POST'])
@@ -143,7 +159,7 @@ def _update_player():
 
     retval = playfield.api_request("post", "player", "update_player", data)
 
-    return jsonify(ret=0)
+    return retval
 
 
 @admin.route('/admin/_update_player_status', methods=['GET'])

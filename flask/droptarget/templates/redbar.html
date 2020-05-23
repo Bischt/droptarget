@@ -1,9 +1,17 @@
 {% with messages = get_flashed_messages() %}
-{% if messages %}
-<div id="redbar" style="width:600px; margin:10 auto; margin-bottom:0px;">
-    {% for message in messages %}
-	<p>&nbsp;&nbsp;{{ message }}</p>
-	{% endfor %}
-</div>
-{% endif %}
+	{% if messages %}
+		{% for message in messages %}
+			{% if message == "error" %}
+				<div id="redbar" class="error" onclick="javascript:close_redbar();">
+			{% elif message == "info" %}
+				<div id="redbar" class="info" onclick="javascript:close_redbar();">
+			{% endif %}
+		{% endfor %}
+    	{% for message in messages %}
+			{% if message != "error" and message != "info" %}
+				{{ message }}
+			{% endif %}
+		{% endfor %}
+			</div>
+	{% endif %}
 {% endwith %}
