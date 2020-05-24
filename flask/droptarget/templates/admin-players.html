@@ -85,6 +85,17 @@
 		}
     }
 
+    // Popup confirmation for player delete
+    function delete_confirm(player_id, name) {
+
+        document.getElementById("remove_player_name").innerHTML = name;
+
+        document.forms['delete_form'].elements["player_id"].value = player_id;
+        document.forms['delete_form'].elements["name"].value = name;
+        document.forms['delete_form'].elements["operation"].value = "delete";
+
+    }
+
     // Handle Add/Editing Player
     function save_player() {
         operation = document.getElementById("save_button").name
@@ -215,7 +226,7 @@ $(document).ready(function() {
         {% for player in player_data %}
         <tr>
             <td><a href="#admin-player-modal" class="open-popup-link" onclick="javascript:show_player({{ player['player_id'] }});">Edit</a>&nbsp;|&nbsp;
-            <a href="#" class="" onclick="">Delete</a>
+                <a href="#delete-player-modal" class="open-popup-link" onclick="javascript:delete_confirm({{ player['player_id'] }}, '{{ player['name'] }}');">Delete</a>
             </td>
             <td>{{ player['name'] }}</td>
             <td>{{ player['nick'] }}</td>
@@ -240,6 +251,7 @@ $(document).ready(function() {
         </tbody>
     </table>
     <a href="#admin-player-modal" class="open-popup-link" onclick="javascript:show_player('');">Add New Player</a>
+
     <!--Modal for adding/editing player-->
     <div id="admin-player-modal" class="white-popup-block mfp-hide" style="max-width:600px; margin: 20px auto;">
         <h1 id="rendered_player_header"></h1>
@@ -265,23 +277,29 @@ $(document).ready(function() {
         </div>
     </div>
 
+    <!--Modal for removing player-->
+    <div id="delete-player-modal" class="white-popup-block mfp-hide" style="max-width:600px; margin: 20px auto;">
+        <h1>Deleting player <span id="remove_player_name"></span></h1>
+        <div>
+            <p>Are you sure you want to delete the player?  This action is permanent.</p>
+            <form action="/admin/players" id="delete_form" name="delete_form" method="POST">
+                {{ playerdeleteform.hidden_tag() }}
+                <input type="submit" value="Delete!" />
+                <input type="button" value="Cancel" class="popup-modal-dismiss" />
+            </form>
+        </div>
+    </div>
+
     <script type="text/javascript">
     //<!--
       $(document).ready(function() {
-
-        $('.simple-ajax-popup-align-top').magnificPopup({
-          type: 'ajax',
-          alignTop: true,
-          overflowY: 'scroll' // as we know that popup content is tall we set scroll overflow by default to avoid jump
-        });
-
-        $('.simple-ajax-popup').magnificPopup({
-          type: 'ajax'
-        });
-
         $('.open-popup-link').magnificPopup({
           type:'inline',
           midClick: true // Allow opening popup on middle mouse click. Always set it to true if you don't provide alternative source in href.
+        });
+        $(document).on('click', '.popup-modal-dismiss', function (e) {
+          e.preventDefault();
+          $.magnificPopup.close();
         });
       });
     //-->

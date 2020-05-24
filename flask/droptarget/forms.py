@@ -36,3 +36,12 @@ class AddPlayerForm(FlaskForm):
         choices=[('true', 'Yes'), ('false', 'No')],
         validators=[AnyOf(values=['false', 'true'], message="Must select whether or not player is active")]
     )
+
+
+class DelPlayerForm(FlaskForm):
+
+    operation = HiddenField('operation', validators=[Optional()])
+
+    player_id = HiddenField('player_id', validators=[Optional()])
+
+    name = HiddenField('name', validators=[Optional()])

@@ -10,7 +10,7 @@ class PlayfieldAPI:
         self.playfield_api_port = port
 
     def api_request(self, method, resource, function, data):
-        if method.lower() == "get" and data is not None:
+        if (method.lower() == "get" or method.lower() == "delete") and data is not None:
             get_vars = ""
             for var in data:
                 get_vars = get_vars + "/" + urllib.parse.quote(var)
@@ -26,6 +26,8 @@ class PlayfieldAPI:
                 response = requests.get(url)
             elif method.lower() == "post":
                 response = requests.post(url, data)
+            elif method.lower() == "delete":
+                response = requests.delete(url)
         except requests.ConnectionError as e:
             return "Error"
 

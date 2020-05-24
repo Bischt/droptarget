@@ -2,6 +2,7 @@ from flask import Flask, Blueprint, jsonify, request, session, g, redirect, url_
     current_app
 from ..backend import PlayfieldAPI
 from ..forms import AddPlayerForm
+from ..forms import DelPlayerForm
 
 app = Flask(__name__)
 
@@ -41,6 +42,7 @@ def show_admin_locations():
 @admin.route('/admin/players', methods=['GET', 'POST'])
 def show_admin_players():
     playerform = AddPlayerForm()
+    playerdeleteform = DelPlayerForm()
 
     # When a form is submitted, process it
     if request.method == 'POST':
@@ -60,6 +62,18 @@ def show_admin_players():
             else:
                 flash("error")
                 flash("Problem accessing Playfield API")
+
+        elif request.form['operation'] == "delete":
+            # Remove the player
+            results = _delete_player()
+
+            if results is not "Error":
+                # Succeeded, so lets display a message
+                flash("info")
+                flash("Removed player - %s" % request.form['name'])
+            else:
+                flash("error")
+                flash("Problem accessing Playfield API")
         else:
             # Adding new player
             results = _add_player()
@@ -76,7 +90,8 @@ def show_admin_players():
                            title="Admin - Players",
                            obj_counts=_get_object_counts(),
                            player_data=_get_all_players(),
-                           playerform=playerform)
+                           playerform=playerform,
+                           playerdeleteform=playerdeleteform)
 
 
 @admin.route('/admin/_admin_player_info')
@@ -124,7 +139,6 @@ def _admin_player_info():
                    active=active)
 
 
-@admin.route('/admin/_add_player', methods=['POST'])
 def _add_player():
     data = dict(name=request.form['name'],
                 nick=request.form['nick'],
@@ -142,7 +156,6 @@ def _add_player():
     return retval
 
 
-@admin.route('/admin/_update_player', methods=['POST'])
 def _update_player():
 
     data = dict(player_id=request.form['player_id'],
@@ -162,6 +175,13 @@ def _update_player():
     return retval
 
 
+def _delete_player():
+    data = (request.form['player_id'])
+    retval = playfield.api_request("delete", "player", "delete_player", data)
+
+    return retval
+
+
 @admin.route('/admin/_update_player_status', methods=['GET'])
 # Update the player's status.  Status is used to determine if the user is paid up.
 def _update_player_status():
@@ -177,7 +197,7 @@ def _update_player_status():
     data = (player_id, str(statusvalue),)
     retval = playfield.api_request("get", "player", "set_status", data)
 
-    return jsonify(ret=0)
+    return retval
 
 
 @admin.route('/admin/_update_player_active', methods=['GET'])
@@ -196,7 +216,7 @@ def _update_player_active():
     data = (player_id, str(activevalue),)
     retval = playfield.api_request("get", "player", "set_active", data)
 
-    return jsonify(ret=0)
+    return retval
 
 
 def _get_all_players():
