@@ -4,15 +4,145 @@
 <link href="{{ url_for('static', filename='styles/lib/jquery.dataTables.min.css') }}" rel="stylesheet" type="text/css" />
 <link href="{{ url_for('static', filename='styles/lib/responsive.dataTables.min.css') }}" rel="stylesheet" type="text/css" />
 
+<link href="{{ url_for('static', filename='styles/lib/magnific-popup.css') }}" rel="stylesheet" type="text/css" />
+
+<style>
+.white-popup-block {
+  position: relative;
+  background: #FFF;
+  padding: 20px;
+  width: auto;
+  max-width: 500px;
+  margin: 20px auto;
+  z-index: 1000000;
+}
+</style>
+
 <script src="{{ url_for('static', filename='scripts/lib/jquery-3.5.1.min.js') }}"></script>
+
+<script src="{{ url_for('static', filename='scripts/lib/jquery.magnific-popup.min.js') }}"></script>
 
 <script src="{{ url_for('static', filename='scripts/lib/jquery.dataTables.min.js') }}"></script>
 <script src="{{ url_for('static', filename='scripts/lib/dataTables.responsive.min.js') }}"></script>
 
 <script type="text/javascript" charset="utf-8">
 //<!--
+    $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+
+    // Show machine details
+    function show_machine(machine_id) {
+
+        // Start by clearing form of any previous data
+        initialize_machine_form();
+
+        // Editing machine
+        if (machine_id != "") {
+	        $.getJSON($SCRIPT_ROOT + '/admin/_admin_machine_info', {
+	            machine_id: machine_id
+	        }, function(data) {
+                // Jquery thing that isn't working
+		        //$("#name").value("TEST VALUE");
+
+                // Set headers
+                if (data.abbr != "") {
+                    document.getElementById("rendered_machine_header").innerHTML = data.name + " (" + data.abbr + ")";
+                }
+                else {
+                    document.getElementById("rendered_machine_header").innerHTML = data.name;
+                }
+                document.getElementById("rendered_machine_subheader").innerHTML = "Edit machine info";
+
+                // Populate fields with existing data for editing
+		        document.getElementById("machine_id").value = data.machine_id;
+		        document.getElementById("name").value = data.name;
+		        document.getElementById("abbr").value = data.abbr;
+		        document.getElementById("manufacturer").value = data.manufacturer;
+		        document.getElementById("manDate").value = data.manDate;
+		        document.getElementById("players").value = data.players;
+		        document.getElementById("gameType").value = data.gameType;
+		        document.getElementById("theme").value = data.theme;
+		        document.getElementById("ipdbURL").value = data.ipdbURL;
+
+		        document.getElementById("save_button").value = "Save Machine";
+		        document.getElementById("save_button").name = "edit_machine";
+
+		        document.getElementById("operation").value = "edit";
+	        });
+	    }
+		// Adding new machine
+		else {
+		    document.getElementById("rendered_machine_header").innerHTML = "Add New Machine"
+		    document.getElementById("rendered_machine_subheader").innerHTML = "Create new entry"
+
+		    document.getElementById("save_button").value = "Add Machine";
+		    document.getElementById("save_button").name = "add_machine";
+
+            document.getElementById("operation").value = "add";
+		}
+    }
+
+    // Popup confirmation for machine delete
+    function delete_confirm(machine_id, name) {
+        document.getElementById("remove_machine_name").innerHTML = name;
+
+        document.forms['delete_form'].elements["machine_id"].value = machine_id;
+        document.forms['delete_form'].elements["name"].value = name;
+        document.forms['delete_form'].elements["operation"].value = "delete";
+    }
+
+    // Handle Add/Editing Machine
+    function save_machine() {
+        operation = document.getElementById("save_button").name
+
+        if (operation == "edit_machine") {
+            $.post($SCRIPT_ROOT + '/admin/_update_machine', {
+	            machine_id: document.getElementById("machine_id").value,
+	            name: document.getElementById("name").value,
+	            abbr: document.getElementById("abbr").value,
+	            manufacturer: document.getElementById("manufacturer").value,
+	            manDate: document.getElementById("manDate").value,
+	            players: document.getElementById("players").value,
+	            theme: document.getElementById("theme").value,
+	            ipdbURL: document.getElementById("ipdbURL").value
+	        }, function(data) {
+
+	        });
+        }
+        else {
+            $.post($SCRIPT_ROOT + '/admin/_add_machine', {
+	            name: document.getElementById("name").value,
+	            abbr: document.getElementById("abbr").value,
+	            manufacturer: document.getElementById("manufacturer").value,
+	            manDate: document.getElementById("manDate").value,
+	            players: document.getElementById("players").value,
+	            theme: document.getElementById("theme").value,
+	            ipdbURL: document.getElementById("ipdbURL").value
+	        }, function(data) {
+
+	        });
+        }
+    }
+
+    function initialize_machine_form() {
+        document.getElementById("rendered_machine_header").innerHTML = ""
+		document.getElementById("rendered_machine_subheader").innerHTML = ""
+        document.getElementById("machine_id").value = "";
+		document.getElementById("abbr").value = "";
+		document.getElementById("manufacturer").value = "";
+		document.getElementById("manDate").value = "";
+		document.getElementById("players").value = "";
+		document.getElementById("theme").value = "";
+		document.getElementById("ipdbURL").value = "";
+    }
+//-->
+</script>
+
+<script type="text/javascript" charset="utf-8">
+//<!--
 $(document).ready(function() {
-    $('#example').DataTable( {
+    $('#machine-table').DataTable( {
+        "lengthMenu": [[20, 30, 50, -1], [20, 30, 50, "All"]],
+        paging: true,
         responsive: {
             details: {
                 display: $.fn.dataTable.Responsive.display.childRowImmediate,
@@ -24,6 +154,7 @@ $(document).ready(function() {
 } );
 //-->
 </script>
+
 {% endblock %}
 
 {% block body %}
@@ -40,20 +171,81 @@ $(document).ready(function() {
     <p>These are all the machines that are available to assign to locations.  Add, Edit, and Delete machines.</p>
 
 
-    <table id="example" class="display nowrap" style="width:100%">
+    <table id="machine-table" class="display nowrap" style="width:100%">
         <thead>
-        <tr> <th>Name</th> <th>Abbr</th> <th>Manufacturer</th> <th>Date</th> <th>Players</th> <th>Type</th> <th>Theme</th> <th>IPDB</th> </tr>
+        <tr> <th></th> <th>Name</th> <th>Abbr</th> <th>Type</th> </tr>
         </thead>
         <tbody>
         {% if machine_data != "api_error" %}
         {% for machine in machine_data %}
-        <tr> <td>{{ machine['name'] }}</td> <td>{{ machine['abbr'] }}</td> <td>{{ machine['manufacturer'] }}</td> <td>{{ machine['manDate'] }}</td> <td>{{ machine['players'] }}</td> <td>{{ machine['gameType'] }}</td> <td>{{ machine['theme'] }}</td> <td>{{ machine['ipdbURL'] }}</td> </tr>
+        <tr>
+            <td>
+                <a href="#admin-machine-modal" class="open-popup-link" onclick="javascript:show_machine({{ machine['machine_id'] }});">Edit</a>&nbsp;|&nbsp;
+                <a href="#delete-machine-modal" class="open-popup-link" onclick="javascript:delete_confirm({{ machine['machine_id'] }}, '{{ machine['name'] }}');">Delete</a>
+            </td>
+            <td>{{ machine['name'] }}</td>
+            <td>{{ machine['abbr'] }}</td>
+            <td>{{ machine['gameType'] }}</td>
+        </tr>
         {% endfor %}
         {% else %}
-        <tr><td>No entries.</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>No entries.</td><td></td><td></td><td></td></tr>
         {% endif %}
         </tbody>
     </table>
+    <a href="#admin-machine-modal" class="open-popup-link" onclick="javascript:show_machine('');">Add New Machine</a>
+
+    <!--Modal for adding/editing machine-->
+    <div id="admin-machine-modal" class="white-popup-block mfp-hide" style="max-width:600px; margin: 20px auto;">
+        <h1 id="rendered_machine_header"></h1>
+        <div>
+        <p id="rendered_machine_subheader"></p>
+
+        <form action="/admin/machines" id="machine_form" name="machine_form" method="POST">
+        {{ machineform.hidden_tag() }}
+        <p><b>Name: </b>{{ machineform.name }}</p>
+	    <p><b>Abbr: </b>{{ machineform.abbr }}</p>
+        <p><b>Manufacturer: </b>{{ machineform.manufacturer }}</p>
+        <p><b>Manufacturer Date: </b>{{ machineform.manDate }}</p>
+        <p><b>Num of Players: </b>{{ machineform.players }}</p>
+        <p><b>Game Type: </b>{{ machineform.gameType }}</p>
+        <p><b>Theme: </b>{{ machineform.theme }}</p>
+	    <p><b>IPDB URL: </b>{{ machineform.ipdbURL }}</p>
+
+        <input type="submit" id="save_button" name="add_machine" value="Add Machine" />
+        </form>
+
+        </div>
+    </div>
+
+    <!--Modal for removing machine-->
+    <div id="delete-machine-modal" class="white-popup-block mfp-hide" style="max-width:600px; margin: 20px auto;">
+        <h1>Deleting machine <span id="remove_machine_name"></span></h1>
+        <div>
+            <p>Are you sure you want to delete the machine?  This action is permanent.</p>
+            <form action="/admin/machines" id="delete_form" name="delete_form" method="POST">
+                {{ machinedeleteform.hidden_tag() }}
+                <input type="submit" value="Delete!" />
+                <input type="button" value="Cancel" class="popup-modal-dismiss" />
+            </form>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+    //<!--
+      $(document).ready(function() {
+        $('.open-popup-link').magnificPopup({
+          type:'inline',
+          midClick: true // Allow opening popup on middle mouse click. Always set it to true if you don't provide alternative source in href.
+
+        });
+        $(document).on('click', '.popup-modal-dismiss', function (e) {
+          e.preventDefault();
+          $.magnificPopup.close();
+        });
+      });
+    //-->
+    </script>
 
 </article>
 <!-- /.post -->

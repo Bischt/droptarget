@@ -45,3 +45,35 @@ class DelPlayerForm(FlaskForm):
     player_id = HiddenField('player_id', validators=[Optional()])
 
     name = HiddenField('name', validators=[Optional()])
+
+
+class AddMachineForm(FlaskForm):
+
+    operation = HiddenField('operation', validators=[Optional()])
+
+    machine_id = HiddenField('player_id', validators=[Optional()])
+
+    name = StringField('Name', validators=[Required(message="Must enter machine name")])
+
+    abbr = StringField('Abbreviation', validators=[Optional()])
+
+    manufacturer = StringField('Manufacturer', validators=[Optional()])
+
+    manDate = StringField('Manufacturer Date', validators=[Optional()])
+
+    players = IntegerField('Num Players', validators=[Optional()])
+
+    gameType = StringField('Type', validators=[Optional()])
+
+    theme = TextField('Theme', validators=[Optional()])
+
+    ipdbURL = TextField('IPDB URL', validators=[Optional()])
+
+
+class DelMachineForm(FlaskForm):
+
+    operation = HiddenField('operation', validators=[Optional()])
+
+    machine_id = HiddenField('machine_id', validators=[Optional()])
+
+    name = HiddenField('name', validators=[Optional()])

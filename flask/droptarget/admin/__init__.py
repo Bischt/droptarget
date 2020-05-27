@@ -3,6 +3,8 @@ from flask import Flask, Blueprint, jsonify, request, session, g, redirect, url_
 from ..backend import PlayfieldAPI
 from ..forms import AddPlayerForm
 from ..forms import DelPlayerForm
+from ..forms import AddMachineForm
+from ..forms import DelMachineForm
 
 app = Flask(__name__)
 
@@ -23,12 +25,100 @@ def show_admin_home():
                            obj_counts=_get_object_counts())
 
 
-@admin.route('/admin/machines')
+@admin.route('/admin/machines', methods=['GET', 'POST'])
 def show_admin_machines():
+    machineform = AddMachineForm()
+    machinedeleteform = DelMachineForm()
+
+    # When a form is submitted, process it
+    if request.method == 'POST':
+        # Process add/edit machine form
+
+        # TODO: Figure out server side form validation
+        # if machineform.validate_on_submit():
+
+        if request.form['operation'] == "edit":
+            # Editing existing machine
+            results = _update_machine()
+
+            if results is not "Error":
+                # Succeeded, so lets display a message
+                flash("info")
+                flash("Edited machine - %s" % request.form['name'])
+            else:
+                flash("error")
+                flash("Problem accessing Playfield API")
+
+        elif request.form['operation'] == "delete":
+            # Remove the machine
+            results = _delete_machine()
+
+            if results is not "Error":
+                # Succeeded, so lets display a message
+                flash("info")
+                flash("Removed machine - %s" % request.form['name'])
+            else:
+                flash("error")
+                flash("Problem accessing Playfield API")
+        else:
+            # Adding new machine
+            results = _add_machine()
+
+            if results is not "Error":
+                # Succeeded, so lets display a message
+                flash("info")
+                flash("Added new machine - %s" % request.form['name'])
+            else:
+                flash("error")
+                flash("Problem accessing Playfield API")
+
     return render_template('admin-machines.html',
                            title="Admin - Machines",
                            obj_counts=_get_object_counts(),
-                           machine_data=_get_all_machines())
+                           machine_data=_get_all_machines(),
+                           machineform=machineform,
+                           machinedeleteform=machinedeleteform)
+
+
+@admin.route('/admin/_admin_machine_info')
+# Get all the admin editable details about a player from the database and return as JSON
+def _admin_machine_info():
+    machine_id = request.args.get('machine_id', 0, type=str)
+
+    # Query API for specific player by id
+    data = (machine_id, )
+    machine_json = playfield.api_request("get", "machine", "machine_by_id", data)
+
+    # If error querying API flash message to user
+    if machine_json is not "Error" and machine_json is not None:
+        entries = playfield.parse_json(machine_json)
+    else:
+        flash("Problem accessing Playfield API")
+        entries = {}
+
+    # TODO: Make API call to IFPA to refresh stored player info
+
+    # Parse out results and compile into JSON
+    for entry in entries:
+        machine_id = entry['machine_id']
+        name = entry['name']
+        abbr = entry['abbr']
+        manufacturer = entry['manufacturer']
+        manDate = entry['manDate']
+        players = entry['players']
+        gameType = entry['gameType']
+        theme = entry['theme']
+        ipdbURL = entry['ipdbURL']
+
+    return jsonify(machine_id=machine_id,
+                   name=name,
+                   abbr=abbr,
+                   manufacturer=manufacturer,
+                   manDate=manDate,
+                   players=players,
+                   gameType=gameType,
+                   theme=theme,
+                   ipdbURL=ipdbURL)
 
 
 @admin.route('/admin/locations')
@@ -178,6 +268,45 @@ def _update_player():
 def _delete_player():
     data = (request.form['player_id'])
     retval = playfield.api_request("delete", "player", "delete_player", data)
+
+    return retval
+
+
+def _add_machine():
+    data = dict(name=request.form['name'],
+                abbr=request.form['abbr'],
+                manufacturer=request.form['manufacturer'],
+                manDate=request.form['manDate'],
+                players=request.form['players'],
+                gameType=request.form['gameType'],
+                theme=request.form['theme'],
+                ipdbURL=request.form['ipdbURL'])
+
+    retval = playfield.api_request("post", "machine", "add_machine", data)
+
+    return retval
+
+
+def _update_machine():
+
+    data = dict(machine_id=request.form['machine_id'],
+                name=request.form['name'],
+                abbr=request.form['abbr'],
+                manufacturer=request.form['manufacturer'],
+                manDate=request.form['manDate'],
+                players=request.form['players'],
+                gameType=request.form['gameType'],
+                theme=request.form['theme'],
+                ipdbURL=request.form['ipdbURL'])
+
+    retval = playfield.api_request("post", "machine", "update_machine", data)
+
+    return retval
+
+
+def _delete_machine():
+    data = (request.form['machine_id'])
+    retval = playfield.api_request("delete", "machine", "delete_machine", data)
 
     return retval
 
