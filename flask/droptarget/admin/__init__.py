@@ -160,7 +160,7 @@ def _update_player():
 
     data = dict(player_id=request.form['player_id'],
                 name=request.form['name'],
-                nick=request.form['nick'],
+                nick=request.form['nick'].upper(),
                 email=request.form['email'],
                 phone=request.form['phone'],
                 location=request.form['location'],

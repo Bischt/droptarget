@@ -14,6 +14,7 @@
   width: auto;
   max-width: 500px;
   margin: 20px auto;
+  z-index: 1000000;
 }
 </style>
 
@@ -87,7 +88,6 @@
 
     // Popup confirmation for player delete
     function delete_confirm(player_id, name) {
-
         document.getElementById("remove_player_name").innerHTML = name;
 
         document.forms['delete_form'].elements["player_id"].value = player_id;
@@ -192,7 +192,9 @@
 <script type="text/javascript" charset="utf-8">
 //<!--
 $(document).ready(function() {
-    $('#example').DataTable( {
+    $('#player-table').DataTable( {
+        "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+        paging: false,
         responsive: {
             details: {
                 display: $.fn.dataTable.Responsive.display.childRowImmediate,
@@ -217,7 +219,7 @@ $(document).ready(function() {
     <p><h3>Manage Players</h3></p>
     <p>Add, update, and delete player profiles.  These players can join tournaments.</p>
 
-    <table id="example" class="display nowrap" style="width:100%">
+    <table id="player-table" class="display nowrap" style="width:100%">
         <thead>
         <tr> <th></th> <th>Name</th> <th>Initials</th> <th>IFPA#</th> <th>Paid?</th> <th>Active</th> </tr>
         </thead>
@@ -296,6 +298,7 @@ $(document).ready(function() {
         $('.open-popup-link').magnificPopup({
           type:'inline',
           midClick: true // Allow opening popup on middle mouse click. Always set it to true if you don't provide alternative source in href.
+
         });
         $(document).on('click', '.popup-modal-dismiss', function (e) {
           e.preventDefault();
