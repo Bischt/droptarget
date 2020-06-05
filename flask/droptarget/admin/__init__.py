@@ -3,6 +3,8 @@ from flask import Flask, Blueprint, jsonify, request, session, g, redirect, url_
 from ..backend import PlayfieldAPI
 from ..forms import AddPlayerForm
 from ..forms import DelPlayerForm
+from ..forms import AddLocationForm
+from ..forms import DelLocationForm
 from ..forms import AddMachineForm
 from ..forms import DelMachineForm
 
@@ -121,12 +123,131 @@ def _admin_machine_info():
                    ipdbURL=ipdbURL)
 
 
-@admin.route('/admin/locations')
+@admin.route('/admin/locations', methods=['GET', 'POST'])
 def show_admin_locations():
+    locationform = AddLocationForm()
+    locationdeleteform = DelLocationForm()
+
+    # When a form is submitted, process it
+    if request.method == 'POST':
+        # Process add/edit machine form
+
+        # TODO: Figure out server side form validation
+        # if locationform.validate_on_submit():
+
+        if request.form['operation'] == "edit":
+            # Editing existing machine
+            results = _update_location()
+
+            if results is not "Error":
+                # Succeeded, so lets display a message
+                flash("info")
+                flash("Edited machine - %s" % request.form['name'])
+            else:
+                flash("error")
+                flash("Problem accessing Playfield API")
+
+        elif request.form['operation'] == "delete":
+            # Remove the machine
+            results = _delete_location()
+
+            if results is not "Error":
+                # Succeeded, so lets display a message
+                flash("info")
+                flash("Removed machine - %s" % request.form['name'])
+            else:
+                flash("error")
+                flash("Problem accessing Playfield API")
+        else:
+            # Adding new machine
+            results = _add_location()
+
+            if results is not "Error":
+                # Succeeded, so lets display a message
+                flash("info")
+                flash("Added new machine - %s" % request.form['name'])
+            else:
+                flash("error")
+                flash("Problem accessing Playfield API")
+
     return render_template('admin-locations.html',
                            title="Admin - Locations",
                            obj_counts=_get_object_counts(),
-                           location_data=_get_all_locations())
+                           location_data=_get_all_locations(),
+                           locationform=locationform,
+                           locationdeleteform=locationdeleteform)
+
+
+@admin.route('/admin/_admin_location_info')
+# Get all the admin editable details about a location from the database and return as JSON
+def _admin_location_info():
+    location_id = request.args.get('location_id', 0, type=str)
+
+    # Query API for specific location by id
+    data = (location_id, )
+    location_json = playfield.api_request("get", "location", "location_by_id", data)
+
+    # If error querying API flash message to user
+    if location_json is not "Error" and location_json is not None:
+        entries = playfield.parse_json(location_json)
+    else:
+        flash("Problem accessing Playfield API")
+        entries = {}
+
+    # TODO: Make API call to IFPA to refresh stored player info
+
+    # Parse out results and compile into JSON
+    for entry in entries:
+        location_id = entry['location_id']
+        name = entry['name']
+        address = entry['address']
+        addressPrivate = entry['addressPrivate']
+        notes = entry['notes']
+        locType = entry['locType']
+        active = entry['active']
+
+    return jsonify(location_id=location_id,
+                   name=name,
+                   address=address,
+                   addressPrivate=addressPrivate,
+                   notes=notes,
+                   locType=locType,
+                   active=active)
+
+
+def _add_location():
+    data = dict(name=request.form['name'],
+                nick=request.form['address'],
+                email=request.form['addressPrivate'],
+                phone=request.form['notes'],
+                location=request.form['locType'],
+                ifpanumber=request.form['active'])
+
+    retval = playfield.api_request("post", "location", "add_location", data)
+
+    return retval
+
+
+def _update_location():
+
+    data = dict(location_id=request.form['location_id'],
+                name=request.form['name'],
+                address=request.form['address'],
+                addressPrivate=request.form['addressPrivate'],
+                notes=request.form['notes'],
+                locType=request.form['locType'],
+                active=request.form['active'])
+
+    retval = playfield.api_request("post", "location", "update_location", data)
+
+    return retval
+
+
+def _delete_location():
+    data = (request.form['location_id'])
+    retval = playfield.api_request("delete", "location", "delete_location", data)
+
+    return retval
 
 
 @admin.route('/admin/players', methods=['GET', 'POST'])
@@ -247,7 +368,6 @@ def _add_player():
 
 
 def _update_player():
-
     data = dict(player_id=request.form['player_id'],
                 name=request.form['name'],
                 nick=request.form['nick'].upper(),
@@ -330,7 +450,7 @@ def _update_player_status():
 
 
 @admin.route('/admin/_update_player_active', methods=['GET'])
-# Update the player's status.  Status is used to determine if the user is paid up.
+# Update the player's active status.
 def _update_player_active():
     player_id = request.args.get('player_id', 0, type=str)
     active = request.args.get('active', 0, type=str)
@@ -359,6 +479,42 @@ def _get_all_players():
 
     return player_entries
 
+
+@admin.route('/admin/_update_location_private', methods=['GET'])
+# Update the location's status.  Status is used to determine if the location address is private.
+def _update_location_private():
+    location_id = request.args.get('location_id', 0, type=str)
+    address_private = request.args.get('addressPrivate', 0, type=int)
+    if address_private == 1:
+        address_private_value = 1
+    elif address_private == 0:
+        address_private_value = 0
+    else:
+        address_private_value = 0
+
+    data = (location_id, str(address_private_value),)
+    retval = playfield.api_request("get", "location", "set_private", data)
+
+    return retval
+
+
+@admin.route('/admin/_update_location_active', methods=['GET'])
+# Update the location's active status
+def _update_location_active():
+    location_id = request.args.get('location_id', 0, type=str)
+    active = request.args.get('active', 0, type=str)
+
+    if active == "true":
+        active_value = True
+    elif active == "false":
+        active_value = False
+    else:
+        active_value = False
+
+    data = (location_id, str(active_value),)
+    retval = playfield.api_request("get", "location", "set_active", data)
+
+    return retval
 
 def _get_all_locations():
     location_json = playfield.api_request("get", "location", "all_locations", None)

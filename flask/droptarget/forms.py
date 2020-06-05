@@ -47,6 +47,46 @@ class DelPlayerForm(FlaskForm):
     name = HiddenField('name', validators=[Optional()])
 
 
+class AddLocationForm(FlaskForm):
+
+    operation = HiddenField('operation', validators=[Optional()])
+
+    location_id = HiddenField('location_id', validators=[Optional()])
+
+    name = StringField('Name', validators=[Required(message="Must enter location name")])
+
+    address = StringField('Address', validators=[Optional()])
+
+    locType = SelectField(
+        'Location Type?',
+        choices=[('0', 'Commercial'), ('1', 'Residence'), ('2', 'Other')],
+        validators=[AnyOf(values=['0', '1', '2'], message="Must select location type")]
+    )
+
+    addressPrivate = SelectField(
+        'Private?',
+        choices=[('true', 'Private'), ('false', 'Open')],
+        validators=[AnyOf(values=['false', 'true'], message="Must select whether or not location is private")]
+    )
+
+    active = SelectField(
+        'Active?',
+        choices=[('true', 'Yes'), ('false', 'No')],
+        validators=[AnyOf(values=['false', 'true'], message="Must select whether or not location is active")]
+    )
+
+    notes = TextField('Notes', validators=[Optional()])
+
+
+class DelLocationForm(FlaskForm):
+
+    operation = HiddenField('operation', validators=[Optional()])
+
+    location_id = HiddenField('location_id', validators=[Optional()])
+
+    name = HiddenField('name', validators=[Optional()])
+
+
 class AddMachineForm(FlaskForm):
 
     operation = HiddenField('operation', validators=[Optional()])
